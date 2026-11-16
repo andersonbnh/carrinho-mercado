@@ -31,6 +31,7 @@ export async function openSettings() {
       toast('Chave removida')
     }
     d.close()
+    d.remove() // não depender do evento 'close' (nem sempre dispara)
   })
   d.addEventListener('close', () => d.remove())
   d.showModal()

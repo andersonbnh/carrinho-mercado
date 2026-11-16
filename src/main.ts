@@ -1,5 +1,6 @@
 import './styles.css'
-import { init, onChange } from './state'
+import { init, onChange, state } from './state'
+import { openMercado } from './ui/mercado'
 import { renderCart } from './ui/cart'
 import { renderList } from './ui/list'
 import { renderHistory } from './ui/history'
@@ -20,6 +21,7 @@ const view = document.getElementById('view')!
 let tab: 'cart' | 'list' | 'hist' = 'cart'
 
 function render() {
+  document.getElementById('nome-mercado')!.textContent = state.mercado
   document.querySelectorAll<HTMLElement>('nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab))
   if (tab === 'cart') renderCart(view)
   else if (tab === 'list') renderList(view)
@@ -29,5 +31,6 @@ function render() {
 document.querySelectorAll<HTMLElement>('nav button').forEach((b) =>
   b.addEventListener('click', () => { tab = b.dataset.tab as typeof tab; render() }))
 document.getElementById('cfg')!.addEventListener('click', openSettings)
+document.getElementById('mercado')!.addEventListener('click', openMercado)
 onChange(render)
 init().then(render)

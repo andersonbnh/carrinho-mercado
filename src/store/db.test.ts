@@ -23,3 +23,12 @@ describe('db', () => {
     expect(await listHistory()).toHaveLength(1)
   })
 })
+
+import { loadMercado, saveMercado } from './db'
+describe('mercado salvo', () => {
+  it('padrão Assaí e persiste a troca', async () => {
+    expect(await loadMercado()).toBe('Assaí')
+    await saveMercado('Atacadão')
+    expect(await loadMercado()).toBe('Atacadão')
+  })
+})

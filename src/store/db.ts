@@ -1,5 +1,6 @@
 import { get, set } from 'idb-keyval'
 import type { Item } from '../core/cart'
+import { MERCADO_PADRAO } from '../core/mercado'
 
 export interface Produto {
   ean: string
@@ -34,3 +35,5 @@ export const loadLimit = async (): Promise<number | undefined> => get<number>('l
 export const saveLimit = (n: number) => set('limit', n)
 export const loadApiKey = async (): Promise<string | undefined> => get<string>('apiKey')
 export const saveApiKey = (k: string | undefined) => set('apiKey', k)
+export const loadMercado = async (): Promise<string> => (await get<string>('mercado')) ?? MERCADO_PADRAO
+export const saveMercado = (nome: string) => set('mercado', nome)

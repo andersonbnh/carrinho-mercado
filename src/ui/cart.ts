@@ -95,7 +95,7 @@ async function editar(idx: number) {
 async function finalizar() {
   if (!state.cart.length) return
   if (!confirm(`Finalizar compra de ${fmt(cartTotal(state.cart))}?`)) return
-  await saveHistory({ data: new Date().toISOString(), mercado: 'Assaí', itens: state.cart, total: cartTotal(state.cart) })
+  await saveHistory({ data: new Date().toISOString(), mercado: state.mercado, itens: state.cart, total: cartTotal(state.cart) })
   await setCart([])
   toast('Compra salva no histórico')
 }
