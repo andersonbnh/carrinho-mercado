@@ -1,2 +1,8 @@
 node_modules
 dist
+
+# Arquivos pessoais / de ferramentas (não fazem parte do app)
+Claude.md
+CLAUDE.md
+.claude/
+docs/superpowers/

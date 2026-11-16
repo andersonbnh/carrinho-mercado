@@ -28,4 +28,3 @@ A câmera só funciona em HTTPS. Publique a pasta `dist/` num host com HTTPS
 (GitHub Pages, Netlify, Cloudflare Pages), abra no Chrome do celular e use
 menu ⋮ → "Adicionar à tela inicial".
 
-Docs: `docs/superpowers/specs/` (design) e `docs/superpowers/plans/` (plano).
