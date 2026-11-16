@@ -1,8 +1,10 @@
-import { GoogleGenAI, ApiError } from '@google/genai'
+import { GoogleGenAI, ApiError, ThinkingLevel } from '@google/genai'
 import { z } from 'zod'
 import type { Etiqueta } from '../core/label'
 
-export const MODELO = 'gemini-3.8-flash'
+// Flash-lite com raciocínio mínimo: ler etiqueta é tarefa simples, e o gemini-3.8-flash
+// (raciocínio "medium" por padrão, sem opção "minimal") passava de 45 s no celular.
+export const MODELO = 'gemini-3.5-flash-lite'
 
 const EtiquetaSchema = z.object({
   nome: z.string(),
@@ -57,7 +59,12 @@ export async function readLabel(jpegBase64: string, apiKey: string, opts: Opcoes
     const r = await ai.models.generateContent({
       model: MODELO,
       contents: [{ role: 'user', parts: [{ inlineData: { mimeType: 'image/jpeg', data: jpegBase64 } }, { text: PROMPT }] }],
-      config: { responseMimeType: 'application/json', responseJsonSchema: JSON_SCHEMA, abortSignal: ac.signal },
+      config: {
+        responseMimeType: 'application/json',
+        responseJsonSchema: JSON_SCHEMA,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+        abortSignal: ac.signal,
+      },
     })
     texto = r.text
   } catch (e) {

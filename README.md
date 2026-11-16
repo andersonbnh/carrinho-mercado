@@ -7,7 +7,7 @@ PWA pessoal para somar o carrinho do Assaí em tempo real. Funciona offline; os 
 - Preço de atacado (preço a partir de N unidades do mesmo produto) aplicado sozinho.
 - Total grande, limite de gasto com barra verde/amarela/vermelha.
 - Lista de compras marcada ao escanear; histórico; compartilhar resumo.
-- Foto da etiqueta lida por IA (Google Gemini `gemini-3.8-flash`): nome, preço, atacado e código. Você confere antes de adicionar.
+- Foto da etiqueta lida por IA (Google Gemini `gemini-3.5-flash-lite`, raciocínio mínimo): nome, preço, atacado e código. Você confere antes de adicionar.
 
 ## Leitura de etiqueta (IA do Google)
 1. Entre em https://aistudio.google.com com sua conta Google.

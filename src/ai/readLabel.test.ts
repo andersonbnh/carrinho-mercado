@@ -11,7 +11,7 @@ vi.mock('@google/genai', () => {
     status: number
     constructor(o: { message: string; status: number }) { super(o.message); this.status = o.status }
   }
-  return { ApiError, GoogleGenAI: class { models = { generateContent } } }
+  return { ApiError, ThinkingLevel: { MINIMAL: 'MINIMAL' }, GoogleGenAI: class { models = { generateContent } } }
 })
 
 const { readLabel, MODELO } = await import('./readLabel')
@@ -29,6 +29,12 @@ describe('readLabel (Gemini)', () => {
     expect(calls[0].model).toBe(MODELO)
     expect(calls[0].contents[0].parts[0].inlineData).toEqual({ mimeType: 'image/jpeg', data: 'BASE64' })
     expect(calls[0].config.responseMimeType).toBe('application/json')
+  })
+  it('usa modelo rápido com raciocínio mínimo (resposta lenta estourava 45 s)', async () => {
+    impl = async () => ({ text: JSON.stringify(ok) })
+    await readLabel('BASE64', 'k')
+    expect(calls[0].model).toBe('gemini-3.5-flash-lite')
+    expect((calls[0].config as unknown as { thinkingConfig: unknown }).thinkingConfig).toEqual({ thinkingLevel: 'MINIMAL' })
   })
   it('JSON fora do formato → erro amigável', async () => {
     impl = async () => ({ text: '{"nome": 1}' })
