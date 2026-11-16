@@ -3,7 +3,7 @@ import { compare } from '../core/priceMemory'
 import { lookupName } from '../core/lookup'
 import { fmt, parseBRL } from '../core/money'
 import { getProduct, saveProduct, saveHistory, loadApiKey } from '../store/db'
-import { etiquetaParaItem } from '../core/label'
+import { etiquetaParaItem, mesclarComSalvo } from '../core/label'
 import { readLabel } from '../ai/readLabel'
 import { takePhoto } from './photo'
 import { openSettings } from './settings'
@@ -72,7 +72,7 @@ export async function handleLabel() {
     fim()
   }
   const prod = rascunho.ean.startsWith('m') ? undefined : await getProduct(rascunho.ean)
-  const item = await itemModal(rascunho, 'Confira a etiqueta', prod?.precoUnit)
+  const item = await itemModal(mesclarComSalvo(rascunho, prod), prod ? 'Produto já salvo — confira' : 'Confira a etiqueta', prod?.precoUnit)
   if (!item) return
   const r = compare(item.precoUnit, prod?.precoUnit)
   if (!item.ean.startsWith('m')) await saveProduct(produtoDe(item))

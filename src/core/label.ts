@@ -25,3 +25,27 @@ export function etiquetaParaItem(e: Etiqueta, agora: number = Date.now()): Parti
     ...(pa !== undefined && qa !== undefined ? { precoAtacado: pa, qtdAtacado: qa } : {}),
   }
 }
+
+/** Dados já salvos de um produto (mesmo formato de Produto no store). */
+export interface ProdutoSalvo {
+  ean: string
+  nome: string
+  precoUnit: number
+  precoAtacado?: number
+  qtdAtacado?: number
+}
+
+/**
+ * Junta a leitura da etiqueta com o produto já salvo: o nome (corrigido pelo usuário) vem do salvo;
+ * preço e atacado lidos agora valem mais (são os atuais), senão usa os salvos.
+ */
+export function mesclarComSalvo(r: Partial<Item> & { ean: string }, salvo?: ProdutoSalvo): Partial<Item> & { ean: string } {
+  if (!salvo) return r
+  const atacadoNovo = r.precoAtacado !== undefined && r.qtdAtacado !== undefined
+  const atacado = atacadoNovo
+    ? { precoAtacado: r.precoAtacado, qtdAtacado: r.qtdAtacado }
+    : salvo.precoAtacado !== undefined && salvo.qtdAtacado !== undefined
+      ? { precoAtacado: salvo.precoAtacado, qtdAtacado: salvo.qtdAtacado }
+      : {}
+  return { ean: r.ean, nome: salvo.nome, qtd: r.qtd ?? 1, precoUnit: r.precoUnit ?? salvo.precoUnit, ...atacado }
+}
