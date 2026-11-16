@@ -26,6 +26,8 @@ export const getProduct = (ean: string) => get<Produto>('p:' + ean)
 export const saveProduct = (p: Produto) => set('p:' + p.ean, p)
 export const listHistory = async (): Promise<Compra[]> => (await get<Compra[]>('hist')) ?? []
 export const saveHistory = async (c: Compra) => set('hist', [c, ...(await listHistory())])
+/** Remove a compra identificada pela data/hora em que foi salva. */
+export const removeHistory = async (data: string) => set('hist', (await listHistory()).filter((c) => c.data !== data))
 export const loadList = async (): Promise<ItemLista[]> => (await get<ItemLista[]>('list')) ?? []
 export const saveList = (l: ItemLista[]) => set('list', l)
 export const loadLimit = async (): Promise<number | undefined> => get<number>('limit')
