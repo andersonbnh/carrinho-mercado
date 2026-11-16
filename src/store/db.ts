@@ -15,11 +15,8 @@ export interface Compra {
   itens: Item[]
   total: number
 }
-export interface ItemLista {
-  nome: string
-  ean?: string
-  feito: boolean
-}
+export type { ItemLista } from '../core/lista'
+import type { ItemLista } from '../core/lista'
 
 export const loadCart = async (): Promise<Item[]> => (await get<Item[]>('cart')) ?? []
 export const saveCart = (i: Item[]) => set('cart', i)

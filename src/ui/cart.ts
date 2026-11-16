@@ -4,6 +4,7 @@ import { lookupName } from '../core/lookup'
 import { fmt, parseBRL } from '../core/money'
 import { getProduct, saveProduct, saveHistory, loadApiKey } from '../store/db'
 import { etiquetaParaItem, mesclarComSalvo } from '../core/label'
+import { marcarLista } from '../core/lista'
 import { readLabel } from '../ai/readLabel'
 import { takePhoto } from './photo'
 import { openSettings } from './settings'
@@ -14,9 +15,9 @@ import { scanCode } from './scanner'
 
 const produtoDe = (i: Item) => ({ ean: i.ean, nome: i.nome, precoUnit: i.precoUnit, precoAtacado: i.precoAtacado, qtdAtacado: i.qtdAtacado })
 
+/** Chamada em toda forma de adicionar ou editar item (código, etiqueta, manual, edição). */
 async function marcarNaLista(i: Item) {
-  const nome = i.nome.toLowerCase()
-  const l = state.list.map((x) => (!x.feito && (x.ean === i.ean || nome.includes(x.nome.toLowerCase())) ? { ...x, feito: true } : x))
+  const l = marcarLista(state.list, i.nome, i.ean)
   if (l.some((x, n) => x.feito !== state.list[n].feito)) await setList(l)
 }
 
@@ -89,6 +90,7 @@ async function editar(idx: number) {
   const r = compare(novo.precoUnit, prod?.precoUnit)
   await saveProduct(produtoDe(novo))
   await setCart(state.cart.map((x, n) => (n === idx ? novo : x)))
+  await marcarNaLista(novo)
   if (r === 'mais caro' || r === 'mais barato') toast(`Preço ${r} que da última vez`)
 }
 
@@ -145,7 +147,9 @@ export function renderCart(view: HTMLElement) {
   view.querySelector('#etq')!.addEventListener('click', handleLabel)
   view.querySelector('#manual')!.addEventListener('click', async () => {
     const item = await itemModal({ ean: 'm' + Date.now() }, 'Item manual')
-    if (item) await setCart(addItem(state.cart, item))
+    if (!item) return
+    await setCart(addItem(state.cart, item))
+    await marcarNaLista(item)
   })
   view.querySelector('#fin')!.addEventListener('click', finalizar)
 }
