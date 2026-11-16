@@ -5,6 +5,17 @@ import { renderList } from './ui/list'
 import { renderHistory } from './ui/history'
 import { openSettings } from './ui/settings'
 
+// Após uma atualização, a página antiga pode pedir um pedaço de código que não existe mais no servidor.
+// Recomendação do Vite: recarregar para pegar a versão nova (uma vez só, para não entrar em loop offline).
+window.addEventListener('vite:preloadError', (e) => {
+  try {
+    if (sessionStorage.getItem('recarregou')) return
+    sessionStorage.setItem('recarregou', '1')
+  } catch { /* sem storage: recarrega mesmo assim */ }
+  e.preventDefault()
+  location.reload()
+})
+
 const view = document.getElementById('view')!
 let tab: 'cart' | 'list' | 'hist' = 'cart'
 

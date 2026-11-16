@@ -4,6 +4,7 @@ import { lookupName } from '../core/lookup'
 import { fmt, parseBRL } from '../core/money'
 import { getProduct, saveProduct, saveHistory, loadApiKey } from '../store/db'
 import { etiquetaParaItem } from '../core/label'
+import { readLabel } from '../ai/readLabel'
 import { takePhoto } from './photo'
 import { openSettings } from './settings'
 import { state, setCart, setLimite, setList } from '../state'
@@ -64,7 +65,6 @@ export async function handleLabel() {
   const { signal, fim } = carregando('🏷️ Lendo etiqueta…')
   let rascunho
   try {
-    const { readLabel } = await import('../ai/readLabel')
     rascunho = etiquetaParaItem(await readLabel(foto, key, { signal }))
   } catch (e) {
     return toast((e as Error).message)
