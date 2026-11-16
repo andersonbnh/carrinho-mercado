@@ -132,7 +132,13 @@ export function renderCart(view: HTMLElement) {
     setCart(state.cart.map((x, n) => (n === +b.dataset.inc! ? { ...x, qtd: x.qtd + 1 } : x)))))
   view.querySelectorAll<HTMLElement>('[data-dec]').forEach((b) => b.addEventListener('click', () => {
     const n = +b.dataset.dec!
-    setCart(state.cart[n].qtd <= 1 ? state.cart.filter((_, k) => k !== n) : state.cart.map((x, k) => (k === n ? { ...x, qtd: x.qtd - 1 } : x)))
+    const item = state.cart[n]
+    if (item.qtd <= 1) {
+      if (!confirm(`Tirar "${item.nome}" do carrinho?`)) return
+      setCart(state.cart.filter((_, k) => k !== n))
+    } else {
+      setCart(state.cart.map((x, k) => (k === n ? { ...x, qtd: x.qtd - 1 } : x)))
+    }
   }))
   view.querySelectorAll<HTMLElement>('[data-edit]').forEach((b) => b.addEventListener('click', () => editar(+b.dataset.edit!)))
   view.querySelector('#scan')!.addEventListener('click', async () => { const c = await scanCode(); if (c) await handleEan(c) })
