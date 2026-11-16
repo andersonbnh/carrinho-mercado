@@ -34,25 +34,47 @@ const PROMPT = `Foto de uma etiqueta de preço de prateleira do Assaí Atacadist
 Não confunda o preço de referência (por kg, litro ou 100 g) com o preço do produto.
 Se a etiqueta não estiver legível, deixe os preços null e descreva o que conseguir no nome.`
 
+export interface OpcoesLeitura {
+  /** Cancelamento pelo usuário. */
+  signal?: AbortSignal
+  /** Tempo máximo de espera. O SDK não tem limite no cliente por padrão (servidor segura até 10 min). */
+  timeoutMs?: number
+  /** Só para testes. */
+  fetch?: typeof fetch
+}
+
 /** Lê uma etiqueta de preço (JPEG em base64) com o Gemini. Lança Error com mensagem para o usuário. */
-export async function readLabel(jpegBase64: string, apiKey: string): Promise<Etiqueta> {
-  const ai = new GoogleGenAI({ apiKey })
+export async function readLabel(jpegBase64: string, apiKey: string, opts: OpcoesLeitura = {}): Promise<Etiqueta> {
+  const { signal, timeoutMs = 45_000 } = opts
+  const ac = new AbortController()
+  let esgotou = false
+  const timer = setTimeout(() => { esgotou = true; ac.abort() }, timeoutMs)
+  const cancelar = () => ac.abort()
+  signal?.addEventListener('abort', cancelar)
+  const ai = new GoogleGenAI({ apiKey, ...(opts.fetch ? { httpOptions: { fetch: opts.fetch } } : {}) })
   let texto: string | undefined
   try {
     const r = await ai.models.generateContent({
       model: MODELO,
       contents: [{ role: 'user', parts: [{ inlineData: { mimeType: 'image/jpeg', data: jpegBase64 } }, { text: PROMPT }] }],
-      config: { responseMimeType: 'application/json', responseJsonSchema: JSON_SCHEMA },
+      config: { responseMimeType: 'application/json', responseJsonSchema: JSON_SCHEMA, abortSignal: ac.signal },
     })
     texto = r.text
   } catch (e) {
+    if (esgotou) throw new Error('A IA demorou demais para responder. Tente de novo.')
+    if (signal?.aborted) throw new Error('Cancelado.')
     if (e instanceof ApiError) {
       if (e.status === 400 && /api key/i.test(e.message)) throw new Error('Chave da API inválida. Confira em ⚙.')
       if (e.status === 401 || e.status === 403) throw new Error('Chave da API inválida ou sem permissão. Confira em ⚙.')
+      if (e.status === 404) throw new Error(`Modelo ${MODELO} indisponível para sua chave.`)
       if (e.status === 429) throw new Error('Limite gratuito atingido. Tente em instantes.')
+      if (e.status === 503) throw new Error('A IA do Google está ocupada. Tente de novo.')
       throw new Error(`Erro da IA (${e.status}). Tente de novo.`)
     }
     throw new Error('Sem internet para ler a etiqueta.')
+  } finally {
+    clearTimeout(timer)
+    signal?.removeEventListener('abort', cancelar)
   }
   if (!texto) throw new Error('A IA não conseguiu ler esta foto. Digite os dados.')
   try {

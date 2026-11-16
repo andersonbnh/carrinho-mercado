@@ -37,12 +37,20 @@ export async function handleEan(ean: string) {
   await marcarNaLista(item)
 }
 
-function carregando(msg: string): () => void {
+/** Tela de espera com contador de segundos e botão Cancelar. Devolve o sinal de cancelamento e a função que fecha a tela. */
+function carregando(msg: string): { signal: AbortSignal; fim: () => void } {
+  const ac = new AbortController()
   const el = document.createElement('div')
   el.className = 'loading'
-  el.textContent = msg
+  el.innerHTML = `<div><div class="msg"></div><button class="btn">Cancelar</button></div>`
+  const txt = el.querySelector<HTMLElement>('.msg')!
+  const t0 = Date.now()
+  const tick = () => { txt.textContent = `${msg} ${Math.floor((Date.now() - t0) / 1000)} s` }
+  tick()
+  const iv = setInterval(tick, 1000)
+  el.querySelector('button')!.addEventListener('click', () => ac.abort())
   document.body.append(el)
-  return () => el.remove()
+  return { signal: ac.signal, fim: () => { clearInterval(iv); el.remove() } }
 }
 
 export async function handleLabel() {
@@ -53,11 +61,11 @@ export async function handleLabel() {
   }
   const foto = await takePhoto()
   if (!foto) return
-  const fim = carregando('🏷️ Lendo etiqueta…')
+  const { signal, fim } = carregando('🏷️ Lendo etiqueta…')
   let rascunho
   try {
     const { readLabel } = await import('../ai/readLabel')
-    rascunho = etiquetaParaItem(await readLabel(foto, key))
+    rascunho = etiquetaParaItem(await readLabel(foto, key, { signal }))
   } catch (e) {
     return toast((e as Error).message)
   } finally {
